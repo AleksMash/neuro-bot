@@ -16,9 +16,13 @@ bot.
 """
 
 import logging
+import os
 
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from dotenv import load_dotenv
+
+from dialogflow import detect_intent_texts
 
 # Enable logging
 logging.basicConfig(
@@ -26,6 +30,10 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+load_dotenv()
+DF_PROJECT_ID=os.getenv('DF_PROJECT_ID')
+TG_TOKEN=os.getenv('TG_TOKEN')
 
 
 # Define a few command handlers. These usually take the two arguments update and
@@ -46,7 +54,9 @@ def help_command(update: Update, context: CallbackContext) -> None:
 
 def echo(update: Update, context: CallbackContext) -> None:
     """Echo the user message."""
-    update.message.reply_text(update.message.text)
+    print(DF_PROJECT_ID)
+    answer = detect_intent_texts(DF_PROJECT_ID, update.message.from_user.id, [update.message.text,])
+    update.message.reply_text(answer)
 
 
 def caps(update: Update, context: CallbackContext):
@@ -56,6 +66,7 @@ def caps(update: Update, context: CallbackContext):
 
 
 def main() -> None:
+    load_dotenv()
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
     updater = Updater("2081633148:AAHT53UQUP_e0raz82jOzovx6-3e8OM7Iik")
