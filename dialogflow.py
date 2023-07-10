@@ -62,9 +62,6 @@ def detect_intent_texts(project_id, session_id, texts, language_code='ru-RU'):
         return response.query_result.fulfillment_text
 
 
-# [END dialogflow_es_detect_intent_text]
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
