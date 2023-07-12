@@ -15,11 +15,12 @@ DF_PROJECT_ID=os.getenv('DF_PROJECT_ID')
 
 def echo(event, vk_api):
     answer = detect_intent_texts(DF_PROJECT_ID, vk_session.client_secret, [event.text,])
-    vk_api.messages.send(
-        user_id=event.user_id,
-        message=answer,
-        random_id=random.randint(1,1000)
-    )
+    if answer:
+        vk_api.messages.send(
+            user_id=event.user_id,
+            message=answer,
+            random_id=random.randint(1,1000)
+        )
 
 
 if __name__ == "__main__":
