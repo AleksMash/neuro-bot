@@ -1,45 +1,42 @@
-#!/usr/bin/env python
-# pylint: disable=C0116,W0613
-# This program is dedicated to the public domain under the CC0 license.
-
-"""
-Simple Bot to reply to Telegram messages.
-
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
-
 import logging
 import os
 
-from telegram import Update, ForceReply
+from telegram import Update, ForceReply, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from dotenv import load_dotenv
 
 from dialogflow import detect_intent_texts
 
-# Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
-)
-
-logger = logging.getLogger(__name__)
 
 load_dotenv()
 DF_PROJECT_ID=os.getenv('DF_PROJECT_ID')
 TG_TOKEN=os.getenv('TG_TOKEN')
 
 
-# Define a few command handlers. These usually take the two arguments update and
-# context.
+class TelegramLogsHandler(logging.Handler):
+
+    def __init__(self, tg_bot, chat_id):
+        super().__init__()
+        self.chat_id = chat_id
+        self.tg_bot: Bot = tg_bot
+
+    def emit(self, record):
+        log_entry = self.format(record)
+        self.tg_bot.send_message(chat_id=self.chat_id, text=log_entry)
+
+
+def init_tg_logger(name):
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(name)
+    tg_bot_logger = Bot(token=TG_TOKEN)
+    logger.addHandler(TelegramLogsHandler(tg_bot_logger, os.getenv('TG_BOT_OWNER_CHAT_ID')))
+    return logger
+
+
+logger = init_tg_logger(__name__)
+
+
 def start(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /start is issued."""
     user = update.effective_user
     update.message.reply_markdown_v2(
         fr'Hi {user.mention_markdown_v2()}\!',
@@ -48,48 +45,26 @@ def start(update: Update, context: CallbackContext) -> None:
 
 
 def help_command(update: Update, context: CallbackContext) -> None:
-    """Send a message when the command /help is issued."""
     update.message.reply_text('Help!')
 
 
-def echo(update: Update, context: CallbackContext) -> None:
-    """Echo the user message."""
-    print(DF_PROJECT_ID)
-    answer = detect_intent_texts(DF_PROJECT_ID, update.message.from_user.id, [update.message.text,])
-    update.message.reply_text(answer)
+def answer(update: Update, context: CallbackContext) -> None:
+    try:
+        answer = detect_intent_texts(DF_PROJECT_ID, update.message.from_user.id, [update.message.text,])
+        update.message.reply_text(answer)
+    except Exception as e:
+        logger.exception('Произошла ошибка при получении ответа от DialofFlow')
 
 
-def caps(update: Update, context: CallbackContext):
-    '''/caps command - capitalize letter in the given text'''
-    text_caps = ' '.join(context.args).upper()
-    context.bot.send_message(chat_id=update.effective_chat.id, text=text_caps)
-
-
-def main() -> None:
-    load_dotenv()
-    """Start the bot."""
-    # Create the Updater and pass it your bot's token.
+def run_dialog_bot() -> None:
     updater = Updater("2081633148:AAHT53UQUP_e0raz82jOzovx6-3e8OM7Iik")
-
-    # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
-
-    # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
-    dispatcher.add_handler(CommandHandler('caps', caps))
-
-    # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, echo))
-
-    # Start the Bot
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, answer))
     updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
 if __name__ == '__main__':
-    main()
+    run_dialog_bot()
