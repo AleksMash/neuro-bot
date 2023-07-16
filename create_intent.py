@@ -51,10 +51,9 @@ if __name__ == "__main__":
     with open(args.file, 'r', encoding='utf-8') as training_file:
         training_phrases: str = training_file.read()
 
-    training_phrases: dict = json.loads(training_phrases, )
+    training_phrases: dict = json.loads(training_phrases)
 
-    display_name = 'Устройство на работу'
-    training_phrases_parts = training_phrases[display_name]['questions']
-    message_texts = [training_phrases[display_name]['answer'],]
-
-    create_intent(DF_PROJECT_ID, display_name, training_phrases_parts, message_texts)
+    for display_name, question_answers in training_phrases.items():
+        training_phrases_parts = question_answers['questions']
+        message_texts = [question_answers['answer'],]
+        create_intent(DF_PROJECT_ID, display_name, training_phrases_parts, message_texts)
