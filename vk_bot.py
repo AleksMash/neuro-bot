@@ -13,6 +13,7 @@ from tg_bot import TelegramLogsHandler
 
 
 DF_PROJECT_ID: str
+vk_session: vk.VkApi
 
 logger = logging.getLogger(__file__)
 
@@ -33,7 +34,7 @@ def main():
     DF_PROJECT_ID = os.getenv('DF_PROJECT_ID')
 
     logging.basicConfig(level=logging.INFO)
-    logger.addHandler(TelegramLogsHandler(Bot(token=os.getenv('TG_token')), os.getenv('TG_BOT_OWNER_CHAT_ID')))
+    logger.addHandler(TelegramLogsHandler(Bot(token=os.getenv('TG_TOKEN')), os.getenv('TG_BOT_OWNER_CHAT_ID')))
 
     try:
         vk_session = vk.VkApi(token=os.getenv('VK_BOT_TOKEN'))
