@@ -33,9 +33,10 @@ if __name__ == "__main__":
         longpoll = VkLongPoll(vk_session)
     except Exception:
         logger.exception('Ошибка при устновления связи с ВК')
-    try:
-        for event in longpoll.listen():
-            if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                answer(event, vk_api)
-    except Exception:
-        logger.exception('Ошибка при обработке сообщения')
+    while True:
+        try:
+            for event in longpoll.listen():
+                if event.type == VkEventType.MESSAGE_NEW and event.to_me:
+                    answer(event, vk_api)
+        except Exception:
+            logger.exception('Ошибка при обработке сообщения')
