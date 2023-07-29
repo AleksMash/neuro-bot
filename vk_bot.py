@@ -12,14 +12,11 @@ from dialogflow import detect_intent_texts
 from tg_bot import TelegramLogsHandler
 
 
-DF_PROJECT_ID: str
-vk_session: vk.VkApi
-
 logger = logging.getLogger(__file__)
 
 
-def answer(event, vk_api):
-    fallback, answer = detect_intent_texts(DF_PROJECT_ID, vk_session.client_secret, [event.text,])
+def answer(event, vk_api, df_project_id, vk_session: vk.VkApi):
+    fallback, answer = detect_intent_texts(df_project_id, vk_session.client_secret, event.text)
     if not fallback:
         vk_api.messages.send(
             user_id=event.user_id,
@@ -29,9 +26,8 @@ def answer(event, vk_api):
 
 
 def main():
-    global DF_PROJECT_ID, vk_session
     load_dotenv()
-    DF_PROJECT_ID = os.getenv('DF_PROJECT_ID')
+    df_project_id = os.getenv('DF_PROJECT_ID')
 
     logging.basicConfig(level=logging.INFO)
     logger.addHandler(TelegramLogsHandler(Bot(token=os.getenv('TG_TOKEN')), os.getenv('TG_BOT_OWNER_CHAT_ID')))
@@ -46,7 +42,7 @@ def main():
         try:
             for event in longpoll.listen():
                 if event.type == VkEventType.MESSAGE_NEW and event.to_me:
-                    answer(event, vk_api)
+                    answer(event, vk_api, df_project_id, vk_session)
         except vk.VkApiError:
             logger.exception('Ошибка API ВК при обработке сообщений')
 

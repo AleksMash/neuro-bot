@@ -7,10 +7,6 @@ import sys
 from dotenv import load_dotenv
 
 
-load_dotenv()
-DF_PROJECT_ID=os.getenv('DF_PROJECT_ID')
-
-
 def create_intent(project_id, display_name, training_phrases_parts, message_texts):
     """Create an intent of the given intent type."""
 
@@ -39,6 +35,8 @@ def create_intent(project_id, display_name, training_phrases_parts, message_text
 
 
 if __name__ == "__main__":
+    load_dotenv()
+    DF_PROJECT_ID = os.getenv('DF_PROJECT_ID')
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
