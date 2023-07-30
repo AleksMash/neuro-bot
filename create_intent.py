@@ -36,7 +36,7 @@ def create_intent(project_id, display_name, training_phrases_parts, message_text
 
 if __name__ == "__main__":
     load_dotenv()
-    DF_PROJECT_ID = os.getenv('DF_PROJECT_ID')
+    df_project_id = os.getenv('df_project_id')
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -54,4 +54,4 @@ if __name__ == "__main__":
     for display_name, question_answers in training_phrases.items():
         training_phrases_parts = question_answers['questions']
         message_texts = [question_answers['answer'],]
-        create_intent(DF_PROJECT_ID, display_name, training_phrases_parts, message_texts)
+        create_intent(df_project_id, display_name, training_phrases_parts, message_texts)
